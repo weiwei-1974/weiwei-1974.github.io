@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>剪纸艺术 · 窗花模拟课件 v7</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    background: #f5efe4;
+    color: #3a2e24;
+    font-size: 17px;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #b52b25, #d8452f);
+    color: #fff;
+    padding: 18px 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  }
+  header h1 { font-size: 27px; letter-spacing: 2px; }
+  header .sub { font-size: 18px; opacity: .9; }
+  header .ver {
+    margin-left: auto;
+    background: rgba(255,255,255,.22);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 17px;
+  }
+  .intro {
+    background: #fff8ea;
+    border-bottom: 1px solid #e8dcc2;
+    padding: 10px 32px;
+    font-size: 17px;
+    color: #6b543c;
+  }
+  main {
+    display: flex;
+    gap: 24px;
+    padding: 22px 32px;
+    align-items: flex-start;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  #panel { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 10px rgba(90,60,30,.10);
+    border: 1px solid #eee0c8;
+  }
+  .card h3 {
+    font-size: 19px;
+    color: #b52b25;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-num {
+    background: #b52b25;
+    color: #fff;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font-family: inherit;
+    font-size: 18px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 2px solid #d8c9a8;
+    background: #fdf9f0;
+    color: #4a3a2a;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  button:hover { border-color: #b52b25; color: #b52b25; }
+  button.active { background: #b52b25; border-color: #b52b25; color: #fff; }
+  button.tool-btn { width: 100%; text-align: center; font-size: 19px; padding: 12px; }
+  button.primary { background: #b52b25; border-color: #b52b25; color: #fff; }
+  button.primary:hover { background: #9c221d; color: #fff; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .swatch {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    box-shadow: 0 1px 4px rgba(0,0,0,.2);
+  }
+  .swatch.active { border-color: #3a2e24; transform: scale(1.1); }
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .slider-row label { font-size: 18px; width: 96px; flex-shrink: 0; }
+  input[type=range] { flex: 1; accent-color: #b52b25; height: 26px; }
+  .val { font-size: 18px; font-weight: bold; color: #b52b25; width: 40px; text-align: right; }
+  .tip { font-size: 16px; color: #8a7256; margin-top: 8px; line-height: 1.55; }
+  #foldInfo {
+    margin-top: 10px;
+    background: #fdf3e3;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 17px;
+    color: #9c5a1d;
+    line-height: 1.5;
+  }
+  #stage { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #stepBar { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; width: 100%; }
+  .pill {
+    font-size: 17px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #eee4cf;
+    color: #7a6647;
+  }
+  .pill.current { background: #b52b25; color: #fff; font-weight: bold; }
+  .pill.done { background: #d9e8cf; color: #4a7a35; }
+  #cvWrap {
+    background: radial-gradient(circle at 50% 40%, #f2e7d2, #e0cfac);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: inset 0 2px 12px rgba(90,60,30,.18), 0 3px 12px rgba(90,60,30,.12);
+  }
+  #cv { border-radius: 10px; cursor: crosshair; touch-action: none; display: block; }
+  #hint {
+    min-height: 30px;
+    font-size: 18px;
+    color: #b52b25;
+    text-align: center;
+    font-weight: bold;
+    transition: opacity .3s;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧧 剪纸艺术 · 窗花模拟课件</h1>
+  <span class="sub">中国非物质文化遗产 · 数字体验课堂</span>
+  <span class="ver">v7.0</span>
+</header>
+<div class="intro">
+  📖 <b>剪纸小知识：</b>纸张默认为<b>方形</b>。「对折」沿边对边折叠，适合剪对称字样（如对折 1 次剪<b>双喜</b>）；「45° 斜折」全部折痕<b>穿过纸张中心</b>、逐次平分圆心角，适合剪以纸中心为花心的<b>团花窗花</b>。折的次数越多，展开后的对称层次越多。
+</div>
+
+<main>
+  <aside id="panel">
+    <div class="card">
+      <h3><span class="step-num">1</span>折叠纸张</h3>
+      <div class="btn-row" id="foldTypeRow">
+        <button data-ft="half" class="active">📄 对折</button>
+        <button data-ft="diag">📐 45° 斜折</button>
+      </div>
+      <div class="slider-row" style="margin-top:12px">
+        <label>折叠次数</label>
+        <div class="btn-row" id="foldCountRow">
+          <button data-fc="1">1次</button>
+          <button data-fc="2" class="active">2次</button>
+          <button data-fc="3">3次</button>
+          <button data-fc="4">4次</button>
+        </div>
+      </div>
+      <div id="foldInfo"></div>
+      <div class="btn-row" style="margin-top:10px">
+        <button id="btnReplay">▶️ 重播折叠动画</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-num">2</span>选择纸张颜色</h3>
+      <div class="swatches" id="swatches"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-num">3</span>画剪影（钢笔工具）</h3>
+      <button id="btnDraw" class="tool-btn">✏️ 开始画剪影</button>
+      <div class="slider-row">
+        <label>笔迹粗细</label>
+        <input type="range" id="brush" min="2" max="16" value="6">
+        <span class="val" id="brushVal">6</span>
+      </div>
+      <div class="slider-row">
+        <label>整体平滑度</label>
+        <input type="range" id="smooth" min="0" max="100" value="50">
+        <span class="val" id="smoothVal">50</span>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button id="btnSmooth" disabled>◉ 平滑</button>
+        <button id="btnCorner" disabled>△ 尖角</button>
+        <button id="btnUndo">↩️ 撤销一笔</button>
+        <button id="btnClear">🗑️ 清空</button>
+      </div>
+      <div class="tip">
+        画完后出现<b>可拖拽的节点圆点</b>：<b>单击节点</b>选中（橙色高亮），再用「◉ 平滑 / △ 尖角」切换该节点的转角样式；<b>双击曲线空白处</b>增加节点，<b>双击节点</b>删除。线条两端靠近纸边或折痕会自动吸附；<b>两端贴边的线条，剪掉的是曲线与纸边围住的靠边部分</b>（例如沿外角画一条弧线，即可把窗花外缘剪成圆形）。
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-num">4</span>剪裁与展开</h3>
+      <div class="btn-row">
+        <button id="btnCut" class="primary">✂️ 执行剪裁</button>
+        <button id="btnUnfold">🌸 展开成窗花</button>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button id="btnBack">✏️ 返回修改剪影</button>
+        <button id="btnReset">🔄 重新开始</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step-num">5</span>保存作品</h3>
+      <button id="btnSave" class="tool-btn primary">💾 保存到桌面（PNG 图片）</button>
+      <div class="tip">弹出保存窗口后选择「桌面」即可；若浏览器直接下载，请到"下载"文件夹查看。</div>
+    </div>
+  </aside>
+
+  <section id="stage">
+    <div id="stepBar"></div>
+    <div id="cvWrap"><canvas id="cv"></canvas></div>
+    <div id="hint">正在准备纸张…</div>
+  </section>
+</main>
+
+<script>
+"use strict";
+/* ================= 基础设置 ================= */
+const SIZE = 640;
+const MARGIN = 24;
+const S = SIZE - MARGIN * 2;                 // 方形纸张边长
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+const cv = document.getElementById("cv");
+cv.width = SIZE * DPR; cv.height = SIZE * DPR;
+cv.style.width = SIZE + "px"; cv.style.height = SIZE + "px";
+const ctx = cv.getContext("2d");
+ctx.scale(DPR, DPR);
+
+const paperCv = document.createElement("canvas");
+paperCv.width = SIZE * DPR; paperCv.height = SIZE * DPR;
+const pctx = paperCv.getContext("2d");
+pctx.scale(DPR, DPR);
+
+/* ================= 状态 ================= */
+const state = { foldType: "half", foldCount: 2, color: "#cf3a32", brush: 6, smooth: 0.5 };
+let mode = "editing";        // editing | cut | unfolded
+let drawMode = false, drawing = false, animating = false;
+let raw = [];
+let strokes = [];            // [{nodes:[{x,y}], types:['smooth'|'corner']}]
+let cutPolys = [], cutDone = false;
+let drag = null, sel = null; // sel = {si,ni} 选中的节点
+let currentPlan = null;
+
+const COLORS = [
+  ["#cf3a32", "大红"], ["#e77c8e", "桃粉"], ["#e8963e", "橙黄"],
+  ["#3f7fbf", "天蓝"], ["#4d9e5f", "草绿"], ["#7b5ea7", "青莲"], ["#d9a441", "明黄"]
+];
+
+/* ================= 折叠几何：多边形模拟 ================= */
+function squarePoly() {
+  return [
+    { x: MARGIN, y: MARGIN }, { x: MARGIN + S, y: MARGIN },
+    { x: MARGIN + S, y: MARGIN + S }, { x: MARGIN, y: MARGIN + S }
+  ];
+}
+/* 按直线 p1-p2 把多边形裁成两半：sgn=1 保留 ref 所在一侧，sgn=-1 保留另一侧 */
+function clipSide(poly, p1, p2, ref, sgn) {
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const sref = sgn * (dx * (ref.y - p1.y) - dy * (ref.x - p1.x));
+  const f = p => dx * (p.y - p1.y) - dy * (p.x - p1.x);
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const fa = f(a) * sref, fb = f(b) * sref;
+    if (fa >= 0) out.push(a);
+    if ((fa > 0 && fb < 0) || (fa < 0 && fb > 0)) {
+      const t = fa / (fa - fb);
+      out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+    }
+  }
+  return out;
+}
+/* 生成折叠方案：每次折叠的折线、被翻起的半边(flap)、折完的区域(region) */
+function computePlan() {
+  const plan = { lines: [], flaps: [], regions: [] };
+  let region = squarePoly();
+  plan.regions.push(region);
+  const pushFold = (p1, p2, ref) => {
+    plan.lines.push({ p1, p2 });
+    plan.flaps.push(clipSide(region, p1, p2, ref, -1));
+    plan.regions.push(clipSide(region, p1, p2, ref, 1));
+    region = plan.regions[plan.regions.length - 1];
+  };
+  if (state.foldType === "half") {
+    // 对折：垂直/水平交替，边对边减半，折痕 x=S/2, y=S/2, x=3S/4 ...
+    for (let i = 1; i <= state.foldCount; i++) {
+      let p1, p2;
+      if (i % 2 === 1) {
+        const x = MARGIN + S * (1 - Math.pow(2, -Math.ceil(i / 2)));
+        p1 = { x, y: MARGIN }; p2 = { x, y: MARGIN + S };
+      } else {
+        const y = MARGIN + S * (1 - Math.pow(2, -i / 2));
+        p1 = { x: MARGIN, y }; p2 = { x: MARGIN + S, y };
+      }
+      pushFold(p1, p2, { x: SIZE - MARGIN - 1, y: SIZE - MARGIN - 1 });
+    }
+  } else {
+    // 45°斜折（中心折法）：所有折痕都通过纸张中心，逐次平分扇区圆心角
+    const C = { x: MARGIN + S / 2, y: MARGIN + S / 2 };
+    let start = Math.PI / 4;   // 首折沿对角线
+    let W = Math.PI;           // 首折后保留 180° 半圆扇区
+    for (let i = 1; i <= state.foldCount; i++) {
+      let lineAng, keepMid;
+      if (i === 1) { lineAng = start; keepMid = start + W / 2; }
+      else {
+        const half = W / 2;
+        lineAng = start + half;      // 折线 = 当前扇区的平分线（过中心）
+        keepMid = start + half / 2;  // 保留前一半扇区
+        W = half;
+      }
+      const p1 = C;
+      const p2 = { x: C.x + Math.cos(lineAng) * S * 1.5, y: C.y + Math.sin(lineAng) * S * 1.5 };
+      const ref = { x: C.x + Math.cos(keepMid) * S * 1.5, y: C.y + Math.sin(keepMid) * S * 1.5 };
+      pushFold(p1, p2, ref);
+    }
+  }
+  return plan;
+}
+function curRegion() { return currentPlan.regions[state.foldCount]; }
+function inRegion(p) {
+  const poly = curRegion();
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+function snapToRegion(p) { // 端点吸附到纸边/折痕边缘
+  const poly = curRegion();
+  let best = null, bd = 30;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const abx = b.x - a.x, aby = b.y - a.y, l2 = abx * abx + aby * aby;
+    if (l2 === 0) continue;
+    let t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / l2;
+    t = Math.max(0, Math.min(1, t));
+    const q = { x: a.x + abx * t, y: a.y + aby * t };
+    const d = Math.hypot(p.x - q.x, p.y - q.y);
+    if (d < bd) { bd = d; best = q; }
+  }
+  return best || p;
+}
+
+/* ================= 仿射矩阵工具 ================= */
+function applyMat(c, M) { c.transform(M.a, M.b, M.c, M.d, M.e, M.f); }
+function matReflect(p1, p2) { // 沿直线 p1-p2 的镜像
+  const dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.hypot(dx, dy);
+  const ux = dx / len, uy = dy / len;
+  const a = 2 * ux * ux - 1, b = 2 * ux * uy, d = 2 * uy * uy - 1;
+  return { a, b, c: b, d, e: p1.x - (a * p1.x + b * p1.y), f: p1.y - (b * p1.x + d * p1.y) };
+}
+function matFoldAbout(p1, p2, theta) { // 纸片绕折线翻折 theta 角（0=原位, π=折平）的投影
+  const dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.hypot(dx, dy);
+  const ux = dx / len, uy = dy / len;
+  const co = Math.cos(theta), s = 1 - co;
+  const a = co + s * ux * ux, b = s * ux * uy, d = co + s * uy * uy;
+  return { a, b, c: b, d, e: p1.x - (a * p1.x + b * p1.y), f: p1.y - (b * p1.x + d * p1.y) };
+}
+
+/* ================= 纸张渲染（含剪裁镂空） ================= */
+function polyPath(c, poly) {
+  c.beginPath();
+  poly.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y));
+  c.closePath();
+}
+function hexLum(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+}
+function inkColor() {
+  return hexLum(state.color) < 0.5 ? "rgba(255,255,255,.88)" : "rgba(45,35,25,.82)";
+}
+function renderPaper() {
+  pctx.save();
+  pctx.clearRect(0, 0, SIZE, SIZE);
+  const region = curRegion();
+  polyPath(pctx, region);
+  pctx.fillStyle = state.color;
+  pctx.fill();
+  const g = pctx.createLinearGradient(MARGIN, MARGIN, SIZE - MARGIN, SIZE - MARGIN);
+  g.addColorStop(0, "rgba(255,255,255,.18)");
+  g.addColorStop(1, "rgba(0,0,0,.10)");
+  pctx.fillStyle = g; pctx.fill();
+  // 折痕线（历次折叠留下的印子）
+  pctx.clip();
+  pctx.strokeStyle = "rgba(0,0,0,.15)";
+  pctx.lineWidth = 1.5;
+  pctx.setLineDash([8, 8]);
+  for (const L of currentPlan.lines) {
+    pctx.beginPath();
+    pctx.moveTo(L.p1.x, L.p1.y);
+    pctx.lineTo(L.p2.x, L.p2.y);
+    pctx.stroke();
+  }
+  pctx.setLineDash([]);
+  pctx.restore();
+  if (cutDone) applyCut();
+}
+function applyCut() {
+  pctx.save();
+  polyPath(pctx, curRegion());
+  pctx.clip();
+  pctx.globalCompositeOperation = "destination-out";
+  pctx.fillStyle = "#000";
+  for (const poly of cutPolys) {
+    polyPath(pctx, poly);
+    pctx.fill();
+  }
+  pctx.restore();
+}
+
+/* ================= 节点曲线（支持 平滑/尖角） ================= */
+function kOf() { return state.smooth * 2; }
+function segCP(pts, types, i, k) {
+  const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+  const t1 = (types && types[i]) || "smooth", t2 = (types && types[i + 1]) || "smooth";
+  let c1, c2;
+  if (t1 === "corner") c1 = { x: p1.x + (p2.x - p1.x) / 3, y: p1.y + (p2.y - p1.y) / 3 };
+  else c1 = { x: p1.x + (p2.x - p0.x) / 6 * k, y: p1.y + (p2.y - p0.y) / 6 * k };
+  if (t2 === "corner") c2 = { x: p2.x - (p2.x - p1.x) / 3, y: p2.y - (p2.y - p1.y) / 3 };
+  else c2 = { x: p2.x - (p3.x - p1.x) / 6 * k, y: p2.y - (p3.y - p1.y) / 6 * k };
+  return [c1, c2];
+}
+function drawStrokePath(c, pts, types) {
+  if (pts.length < 2) return;
+  c.strokeStyle = inkColor();
+  c.lineWidth = state.brush;
+  c.lineCap = "round"; c.lineJoin = "round";
+  c.beginPath();
+  if (pts.length === 2) {
+    c.moveTo(pts[0].x, pts[0].y); c.lineTo(pts[1].x, pts[1].y);
+  } else {
+    c.moveTo(pts[0].x, pts[0].y);
+    const k = kOf();
+    for (let i = 0; i < pts.length - 1; i++) {
+      const cp = segCP(pts, types, i, k);
+      c.bezierCurveTo(cp[0].x, cp[0].y, cp[1].x, cp[1].y, pts[i + 1].x, pts[i + 1].y);
+    }
+  }
+  c.stroke();
+}
+function splineDense(pts, k, per, types) {
+  const out = [pts[0]];
+  if (pts.length === 2) {
+    for (let j = 1; j <= per; j++) {
+      const t = j / per;
+      out.push({ x: pts[0].x + (pts[1].x - pts[0].x) * t, y: pts[0].y + (pts[1].y - pts[0].y) * t });
+    }
+    return out;
+  }
+  for (let i = 0; i < pts.length - 1; i++) {
+    const cp = segCP(pts, types, i, k);
+    const p1 = pts[i], p2 = pts[i + 1];
+    for (let j = 1; j <= per; j++) {
+      const t = j / per, t2 = t * t, t3 = t2 * t;
+      out.push({
+        x: (1 - t) * (1 - t) * (1 - t) * p1.x + 3 * (1 - t) * (1 - t) * t * cp[0].x + 3 * (1 - t) * t * t * cp[1].x + t * t * t * p2.x,
+        y: (1 - t) * (1 - t) * (1 - t) * p1.y + 3 * (1 - t) * (1 - t) * t * cp[0].y + 3 * (1 - t) * t * t * cp[1].y + t * t * t * p2.y
+      });
+    }
+  }
+  return out;
+}
+function distToSeg(p, a, b) {
+  const abx = b.x - a.x, aby = b.y - a.y;
+  const len2 = abx * abx + aby * aby;
+  if (len2 === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  let t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t * abx), p.y - (a.y + t * aby));
+}
+function rdp(pts, eps) {
+  if (pts.length < 3) return pts.slice();
+  const keep = new Array(pts.length).fill(false);
+  keep[0] = keep[pts.length - 1] = true;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop();
+    let dmax = 0, idx = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = distToSeg(pts[i], pts[a], pts[b]);
+      if (d > dmax) { dmax = d; idx = i; }
+    }
+    if (dmax > eps) { keep[idx] = true; stack.push([a, idx], [idx, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+
+/* ================= 主画布渲染 ================= */
+function drawDesk(c) {
+  const g = c.createRadialGradient(SIZE / 2, SIZE / 2, 40, SIZE / 2, SIZE / 2, SIZE * 0.75);
+  g.addColorStop(0, "#f4e9d3");
+  g.addColorStop(1, "#e0cfac");
+  c.fillStyle = g;
+  c.fillRect(0, 0, SIZE, SIZE);
+}
+function drawGuides() {
+  const region = curRegion();
+  ctx.save();
+  // 纸边实线
+  polyPath(ctx, region);
+  ctx.strokeStyle = "rgba(120,70,40,.55)";
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  // 折痕虚线
+  ctx.clip();
+  ctx.setLineDash([7, 6]);
+  ctx.strokeStyle = "rgba(120,80,40,.5)";
+  for (const L of currentPlan.lines) {
+    ctx.beginPath();
+    ctx.moveTo(L.p1.x, L.p1.y);
+    ctx.lineTo(L.p2.x, L.p2.y);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle = "rgba(90,60,30,.75)";
+  ctx.font = "16px 'Microsoft YaHei'";
+  ctx.fillText("已折 " + Math.pow(2, state.foldCount) + " 层 · 虚线为折痕", MARGIN + 6, MARGIN - 6);
+  // 花心标记（展开后的图案中心 = 纸张中心）
+  const C = { x: MARGIN + S / 2, y: MARGIN + S / 2 };
+  ctx.beginPath(); ctx.arc(C.x, C.y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(90,60,30,.65)"; ctx.fill();
+  ctx.fillText("花心", C.x + 8, C.y - 8);
+  ctx.restore();
+}
+function drawNodes() {
+  ctx.save();
+  strokes.forEach((st, si) => {
+    st.nodes.forEach((p, ni) => {
+      const isSel = sel && sel.si === si && sel.ni === ni;
+      const isCorner = st.types[ni] === "corner";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, isSel ? 7 : 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = isSel ? "#f5a623" : "#fff";
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = isSel ? "#d97b00" : (isCorner ? "#4a3a2a" : "#b52b25");
+      ctx.stroke();
+      if (isCorner) { // 尖角节点画一个小三角标记
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y - 3.2); ctx.lineTo(p.x + 3, p.y + 2.4); ctx.lineTo(p.x - 3, p.y + 2.4);
+        ctx.closePath();
+        ctx.fillStyle = "#4a3a2a"; ctx.fill();
+      }
+    });
+  });
+  ctx.restore();
+}
+function renderFolded() {
+  drawDesk(ctx);
+  ctx.drawImage(paperCv, 0, 0, SIZE, SIZE);
+  if (mode === "editing") drawGuides();
+  ctx.save();
+  polyPath(ctx, curRegion());
+  ctx.clip();
+  for (const st of strokes) drawStrokePath(ctx, st.nodes, st.types);
+  if (drawing && raw.length > 1) drawStrokePath(ctx, raw, null);
+  ctx.restore();
+  if (mode === "editing") drawNodes();
+}
+
+/* ================= 折叠动画（翻折仿真） ================= */
+function drawPaperPoly(poly, layers) {
+  if (!poly || poly.length < 3) return;
+  polyPath(ctx, poly);
+  ctx.fillStyle = state.color; ctx.fill();
+  const g = ctx.createLinearGradient(MARGIN, MARGIN, SIZE - MARGIN, SIZE - MARGIN);
+  g.addColorStop(0, "rgba(255,255,255,.16)");
+  g.addColorStop(1, "rgba(0,0,0,.10)");
+  ctx.fillStyle = g; ctx.fill();
+  if (layers > 0) { ctx.fillStyle = "rgba(0,0,0," + Math.min(0.16, 0.05 * layers) + ")"; ctx.fill(); }
+  ctx.strokeStyle = "rgba(120,70,40,.55)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+}
+function drawFoldFrame(step, theta) {
+  // step: 正在进行的折叠序号(1..n)；theta: 翻折角 0→π
+  drawDesk(ctx);
+  const plan = currentPlan;
+  drawPaperPoly(plan.regions[step], step - 1);
+  if (step > 0) {
+    const L = plan.lines[step - 1];
+    ctx.save();
+    ctx.setLineDash([7, 6]);
+    ctx.strokeStyle = "rgba(120,80,40,.55)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(L.p1.x, L.p1.y); ctx.lineTo(L.p2.x, L.p2.y); ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    applyMat(ctx, matFoldAbout(L.p1, L.p2, theta));
+    ctx.shadowColor = "rgba(60,30,10,.35)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 5;
+    drawPaperPoly(plan.flaps[step - 1], step - 1);
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.fillStyle = "rgba(90,60,30,.85)";
+  ctx.font = "bold 19px 'Microsoft YaHei'";
+  const msg = step === 0 ? "📄 一张方形纸" : "第 " + step + " / " + state.foldCount + " 次折叠…";
+  ctx.fillText(msg, MARGIN + 8, MARGIN + 28);
+  ctx.restore();
+}
+function animateFold(done) {
+  animating = true;
+  currentPlan = computePlan();
+  const n = state.foldCount;
+  if (n === 0) { animating = false; done && done(); return; }
+  let step = 0;
+  function playStep() {
+    step++;
+    const t0 = performance.now(), dur = 780;
+    function frame(now) {
+      const t = Math.min(1, (now - t0) / dur);
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      drawFoldFrame(step, Math.PI * e);
+      if (t < 1) requestAnimationFrame(frame);
+      else if (step < n) setTimeout(playStep, 240);
+      else { animating = false; setTimeout(done, 320); }
+    }
+    requestAnimationFrame(frame);
+  }
+  drawFoldFrame(0, 0);
+  setTimeout(playStep, 480);
+}
+
+/* ================= 展开窗花 ================= */
+function drawUnfold(c, upto) {
+  // 反射矩阵法（对折/斜折通用）：斜折折痕全过纸中心，
+  // 2^n 个反射副本恰好把方形精确铺满（已数值验证零空洞零重叠）
+  drawDesk(c);
+  const plan = currentPlan, n = plan.lines.length;
+  const total = 1 << n;
+  for (let b = 0; b < Math.min(upto, total); b++) {
+    c.save();
+    for (let i = 0; i < n; i++) {
+      if (b & (1 << i)) applyMat(c, matReflect(plan.lines[i].p1, plan.lines[i].p2));
+    }
+    c.drawImage(paperCv, 0, 0, SIZE, SIZE);
+    c.restore();
+  }
+}
+function renderAll() {
+  if (mode === "unfolded") drawUnfold(ctx, 1 << state.foldCount);
+  else renderFolded();
+  updateStepBar();
+  updateFoldInfo();
+}
+
+/* ================= 交互 ================= */
+function pos(e) {
+  const r = cv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * (SIZE / r.width), y: (e.clientY - r.top) * (SIZE / r.height) };
+}
+cv.addEventListener("pointerdown", e => {
+  if (mode !== "editing" || animating) return;
+  const p = pos(e);
+  for (let si = strokes.length - 1; si >= 0; si--) {
+    const ns = strokes[si].nodes;
+    for (let ni = ns.length - 1; ni >= 0; ni--) {
+      if (Math.hypot(ns[ni].x - p.x, ns[ni].y - p.y) < 13) {
+        sel = { si, ni };
+        drag = { si, ni };
+        cv.setPointerCapture(e.pointerId);
+        updateNodeTypeButtons();
+        renderAll();
+        return;
+      }
+    }
+  }
+  if (!drawMode) {
+    if (sel) { sel = null; updateNodeTypeButtons(); renderAll(); }
+    flashHint("请先点击左侧「✏️ 开始画剪影」按钮；或单击节点选中后切换平滑/尖角");
+    return;
+  }
+  if (!inRegion(p)) return;
+  drawing = true;
+  raw = [p];
+  cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener("pointermove", e => {
+  if (drag) {
+    const p = pos(e);
+    strokes[drag.si].nodes[drag.ni] = p;
+    renderAll();
+  } else if (drawing) {
+    const p = pos(e);
+    const last = raw[raw.length - 1];
+    if (inRegion(p) && Math.hypot(p.x - last.x, p.y - last.y) > 2.5) {
+      raw.push(p);
+      renderAll();
+    }
+  }
+});
+cv.addEventListener("pointerup", () => {
+  if (drag) { drag = null; return; }
+  if (drawing) { drawing = false; commitStroke(); }
+});
+cv.addEventListener("dblclick", e => {
+  if (mode !== "editing" || animating) return;
+  const p = pos(e);
+  // 1) 双击已有节点 → 删除
+  for (let si = strokes.length - 1; si >= 0; si--) {
+    const st = strokes[si];
+    for (let ni = st.nodes.length - 1; ni >= 0; ni--) {
+      if (Math.hypot(st.nodes[ni].x - p.x, st.nodes[ni].y - p.y) < 13) {
+        st.nodes.splice(ni, 1);
+        st.types.splice(ni, 1);
+        if (st.nodes.length < 2) strokes.splice(si, 1);
+        sel = null;
+        updateNodeTypeButtons();
+        flashHint("🗑️ 已删除节点");
+        renderAll();
+        return;
+      }
+    }
+  }
+  // 2) 双击曲线附近 → 插入新节点（默认平滑）
+  for (let si = strokes.length - 1; si >= 0; si--) {
+    const st = strokes[si];
+    if (st.nodes.length < 2) continue;
+    const dense = splineDense(st.nodes, kOf(), 12, st.types);
+    let best = -1, bd = 16;
+    for (let i = 1; i < dense.length - 1; i++) {
+      const d = Math.hypot(dense[i].x - p.x, dense[i].y - p.y);
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best >= 0) {
+      const seg = Math.min(st.nodes.length - 1, Math.floor((best - 1) / 12) + 1);
+      st.nodes.splice(seg, 0, { x: dense[best].x, y: dense[best].y });
+      st.types.splice(seg, 0, "smooth");
+      sel = { si, ni: seg };
+      updateNodeTypeButtons();
+      flashHint("➕ 已增加节点（默认平滑），可拖动或改为尖角");
+      renderAll();
+      return;
+    }
+  }
+});
+
+function commitStroke() {
+  if (raw.length >= 3) {
+    let nodes = rdp(raw, 7);
+    if (nodes.length >= 2) {
+      nodes[0] = snapToRegion(nodes[0]);
+      nodes[nodes.length - 1] = snapToRegion(nodes[nodes.length - 1]);
+      strokes.push({ nodes, types: nodes.map(() => "smooth") });
+      flashHint("剪影已记录：单击节点可切换平滑/尖角，满意后点「✂️ 执行剪裁」");
+    }
+  }
+  raw = [];
+  renderAll();
+}
+
+/* ================= 操作按钮 ================= */
+function pointInPoly(poly, p) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+// 剪影闭合：两端贴纸边时，沿纸张边界链闭合（剪掉靠纸边一侧），而非直线弦
+function buildCutPoly(pts) {
+  const reg = curRegion();
+  const EDGE_D = 4;
+  const s0 = pts[0], s1 = pts[pts.length - 1];
+  function locate(p) {
+    let bi = -1, bt = 0, bd = 1e9;
+    for (let i = 0; i < reg.length; i++) {
+      const a = reg[i], b = reg[(i + 1) % reg.length];
+      const abx = b.x - a.x, aby = b.y - a.y, l2 = abx * abx + aby * aby;
+      if (!l2) continue;
+      let t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / l2;
+      t = Math.max(0, Math.min(1, t));
+      const q = { x: a.x + abx * t, y: a.y + aby * t };
+      const d = Math.hypot(p.x - q.x, p.y - q.y);
+      if (d < bd) { bd = d; bi = i; bt = t; }
+    }
+    return { i: bi, t: bt, d: bd };
+  }
+  const le = locate(s0), re = locate(s1);
+  // 只有两端都贴边才走边界链；否则按原样直线闭合（自由闭环）
+  if (le.d > EDGE_D || re.d > EDGE_D || le.i < 0 || re.i < 0) return pts;
+  if (le.i === re.i) {
+    // 两端在同一条边上：弦就在边上，直接闭合即可
+    return pts;
+  }
+  function chain(from, dir) { // 沿边界从 from 边走到起点所在边，返回途经顶点
+    const out = [];
+    let i = from.i;
+    if (dir > 0) { do { i = (i + 1) % reg.length; out.push(reg[i]); } while (i !== le.i); }
+    else { do { out.push(reg[i]); i = (i - 1 + reg.length) % reg.length; } while (i !== le.i); }
+    return out;
+  }
+  const cF = chain(re, 1), cB = chain(re, -1);
+  const polyF = pts.concat(cF), polyB = pts.concat(cB);
+  let cx = 0, cy = 0;
+  reg.forEach(p => { cx += p.x / reg.length; cy += p.y / reg.length; });
+  const centroid = { x: cx, y: cy };
+  const area = poly => {
+    let a = 0;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++)
+      a += (poly[j].x + poly[i].x) * (poly[j].y - poly[i].y);
+    return Math.abs(a / 2);
+  };
+  const inF = pointInPoly(polyF, centroid), inB = pointInPoly(polyB, centroid);
+  let pick;
+  if (inF !== inB) pick = inF ? polyB : polyF;   // 剪掉不包含花心（质心）的一侧
+  else pick = area(polyF) <= area(polyB) ? polyF : polyB;
+  return pick;
+}
+function doCut() {
+  if (mode === "unfolded") { flashHint("请先点「返回修改剪影」"); return; }
+  cutPolys = [];
+  for (const st of strokes) {
+    if (st.nodes.length < 2) continue;
+    const nodes = st.nodes.map((p, i) =>
+      (i === 0 || i === st.nodes.length - 1) ? snapToRegion(p) : p
+    );
+    cutPolys.push(buildCutPoly(splineDense(nodes, kOf(), 12, st.types)));
+  }
+  if (!cutPolys.length) { flashHint("请先画出剪影线条"); return; }
+  cutDone = true;
+  mode = "cut";
+  drawMode = false;
+  sel = null;
+  updateButtons();
+  updateNodeTypeButtons();
+  renderPaper();
+  renderAll();
+  flashHint("✂️ 已剪掉多余部分！点「🌸 展开成窗花」看效果");
+}
+function startUnfold() {
+  if (!cutDone) { flashHint("请先执行剪裁"); return; }
+  mode = "unfolded";
+  drawMode = false;
+  updateButtons();
+  const total = 1 << state.foldCount;
+  let i = 0;
+  const timer = setInterval(() => {
+    i++;
+    drawUnfold(ctx, i);
+    if (i >= total) {
+      clearInterval(timer);
+      flashHint("🌸 窗花展开完成！点「💾 保存到桌面」导出作品");
+      updateStepBar();
+    }
+  }, 130);
+}
+function backToEdit() {
+  mode = "editing";
+  cutDone = false;
+  sel = null;
+  updateNodeTypeButtons();
+  renderPaper();
+  renderAll();
+  flashHint("已回到编辑状态，可修改剪影后重新剪裁");
+}
+function resetAll() {
+  strokes = []; cutPolys = []; cutDone = false; raw = [];
+  drawMode = false; mode = "editing"; sel = null;
+  updateNodeTypeButtons();
+  renderPaper(); renderAll(); updateButtons();
+  flashHint("已重新开始，请选择折法与折叠次数");
+}
+
+/* ================= 保存到桌面 ================= */
+async function savePng() {
+  if (mode !== "unfolded") { flashHint("请先展开成窗花再保存"); return; }
+  const ec = document.createElement("canvas");
+  ec.width = SIZE * DPR; ec.height = SIZE * DPR;
+  const c = ec.getContext("2d");
+  c.scale(DPR, DPR);
+  drawUnfold(c, 1 << state.foldCount);
+  const blob = await new Promise(r => ec.toBlob(r, "image/png"));
+  const d = new Date();
+  const name = "窗花作品_" + d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") +
+               String(d.getDate()).padStart(2, "0") + "_" +
+               String(d.getHours()).padStart(2, "0") + String(d.getMinutes()).padStart(2, "0") + ".png";
+  if (window.showSaveFilePicker) {
+    try {
+      const h = await window.showSaveFilePicker({
+        suggestedName: name,
+        types: [{ description: "PNG 图片", accept: { "image/png": [".png"] } }]
+      });
+      const w = await h.createWritable();
+      await w.write(blob);
+      await w.close();
+      flashHint("✅ 已保存：" + name);
+      return;
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  flashHint("✅ 已开始下载 " + name + "（若不在桌面，请到下载文件夹查看）");
+}
+
+/* ================= UI 更新 ================= */
+function updateFoldInfo() {
+  const el = document.getElementById("foldInfo");
+  const layers = Math.pow(2, state.foldCount);
+  if (state.foldType === "half") {
+    el.textContent = "当前：对折 " + state.foldCount + " 次 → " + layers + " 层纸，展开为镜像对称图案（对折 1 次即可剪「双喜」）";
+  } else {
+    el.textContent = "当前：45° 斜折 " + state.foldCount + " 次 → 全部折痕过纸中心，展开为 " + Math.pow(2, state.foldCount) + " 瓣中心对称团花";
+  }
+}
+function updateButtons() {
+  const bd = document.getElementById("btnDraw");
+  bd.classList.toggle("active", drawMode);
+  bd.textContent = drawMode ? "🖐️ 画笔开启中（点击暂停）" : "✏️ 开始画剪影";
+}
+function updateNodeTypeButtons() {
+  const bs = document.getElementById("btnSmooth");
+  const bc = document.getElementById("btnCorner");
+  if (!sel) { bs.disabled = true; bc.disabled = true; bs.classList.remove("active"); bc.classList.remove("active"); return; }
+  const t = strokes[sel.si].types[sel.ni];
+  bs.disabled = false; bc.disabled = false;
+  bs.classList.toggle("active", t === "smooth");
+  bc.classList.toggle("active", t === "corner");
+}
+function setNodeType(t) {
+  if (!sel) return;
+  strokes[sel.si].types[sel.ni] = t;
+  updateNodeTypeButtons();
+  renderAll();
+}
+const STEPS = ["1 折纸", "2 选色", "3 画剪影", "4 剪裁", "5 展开", "6 保存"];
+function updateStepBar() {
+  const bar = document.getElementById("stepBar");
+  let cur = 0;
+  if (mode === "editing" && !strokes.length) cur = 0;
+  else if (mode === "editing") cur = 2;
+  else if (mode === "cut") cur = 3;
+  else cur = 4;
+  bar.innerHTML = STEPS.map((s, i) =>
+    '<span class="pill ' + (i === cur ? "current" : i < cur ? "done" : "") + '">' + s + "</span>"
+  ).join("");
+}
+let hintTimer = null;
+function flashHint(msg) {
+  const el = document.getElementById("hint");
+  el.textContent = msg;
+  el.style.opacity = "1";
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => { el.style.opacity = "0.55"; }, 6000);
+}
+
+/* ================= 控件绑定 ================= */
+document.getElementById("foldTypeRow").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#foldTypeRow button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  state.foldType = b.dataset.ft;
+  resetFoldChange();
+});
+document.getElementById("foldCountRow").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#foldCountRow button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  state.foldCount = parseInt(b.dataset.fc, 10);
+  resetFoldChange();
+});
+function resetFoldChange() {
+  strokes = []; cutPolys = []; cutDone = false; raw = [];
+  drawMode = false; mode = "editing"; sel = null;
+  updateButtons(); updateNodeTypeButtons();
+  updateStepBar(); updateFoldInfo();
+  animateFold(() => {
+    renderPaper();
+    renderAll();
+    flashHint("折叠完成！点「✏️ 开始画剪影」继续");
+  });
+}
+(function initSwatches() {
+  const box = document.getElementById("swatches");
+  COLORS.forEach(([c, label], idx) => {
+    const d = document.createElement("div");
+    d.className = "swatch" + (idx === 0 ? " active" : "");
+    d.style.background = c;
+    d.title = label;
+    d.addEventListener("click", () => {
+      document.querySelectorAll(".swatch").forEach(x => x.classList.remove("active"));
+      d.classList.add("active");
+      state.color = c;
+      renderPaper(); renderAll();
+      flashHint("已换成「" + label + "」纸张");
+    });
+    box.appendChild(d);
+  });
+})();
+document.getElementById("brush").addEventListener("input", e => {
+  state.brush = parseInt(e.target.value, 10);
+  document.getElementById("brushVal").textContent = e.target.value;
+  if (mode === "editing") renderAll();
+});
+document.getElementById("smooth").addEventListener("input", e => {
+  state.smooth = parseInt(e.target.value, 10) / 100;
+  document.getElementById("smoothVal").textContent = e.target.value;
+  if (mode === "editing") renderAll();
+});
+document.getElementById("btnDraw").addEventListener("click", () => {
+  if (mode !== "editing") { flashHint("请先点「返回修改剪影」"); return; }
+  drawMode = !drawMode;
+  updateButtons();
+  flashHint(drawMode ? "画笔已开启：在纸上按住拖动画出剪影线条" : "画笔已暂停");
+});
+document.getElementById("btnSmooth").addEventListener("click", () => setNodeType("smooth"));
+document.getElementById("btnCorner").addEventListener("click", () => setNodeType("corner"));
+document.getElementById("btnUndo").addEventListener("click", () => {
+  if (mode === "unfolded") backToEdit();
+  strokes.pop();
+  sel = null;
+  updateNodeTypeButtons();
+  renderAll();
+  flashHint("已撤销一笔");
+});
+document.getElementById("btnClear").addEventListener("click", () => {
+  if (mode !== "editing") backToEdit();
+  strokes = []; raw = []; sel = null;
+  updateNodeTypeButtons();
+  renderAll();
+  flashHint("已清空全部剪影，重新画吧");
+});
+document.getElementById("btnCut").addEventListener("click", doCut);
+document.getElementById("btnUnfold").addEventListener("click", startUnfold);
+document.getElementById("btnBack").addEventListener("click", backToEdit);
+document.getElementById("btnReset").addEventListener("click", resetAll);
+document.getElementById("btnSave").addEventListener("click", savePng);
+document.getElementById("btnReplay").addEventListener("click", () => {
+  if (animating) return;
+  strokes = []; cutPolys = []; cutDone = false; raw = [];
+  drawMode = false; mode = "editing"; sel = null;
+  updateButtons(); updateNodeTypeButtons(); updateStepBar();
+  animateFold(() => { renderPaper(); renderAll(); flashHint("动画重播完毕"); });
+});
+
+/* ================= 启动 ================= */
+updateButtons();
+updateNodeTypeButtons();
+animateFold(() => {
+  renderPaper();
+  renderAll();
+  flashHint("欢迎来到剪纸课堂！方形纸已折好，请选择颜色并开始画剪影");
+});
+</script>
+</body>
+</html>
